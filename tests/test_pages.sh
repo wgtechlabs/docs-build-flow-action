@@ -291,17 +291,22 @@ cat > "${fake_bin}/docker" <<'EOF'
 set -euo pipefail
 printf '%s\n' "$*" > "${DOCKER_LOG:?}"
 previous=""
-output=""
+parent=""
+name=""
 for arg in "$@"; do
-  if [[ "$previous" == "-v" && "$arg" == *:/tmp/mdd-dist ]]; then
-    output="${arg%:/tmp/mdd-dist}"
+  if [[ "$previous" == "-v" && "$arg" == *:/mdd-work ]]; then
+    parent="${arg%:/mdd-work}"
+  fi
+  if [[ "$previous" == "-e" && "$arg" == MDD_OUTPUT_DIR=/mdd-work/* ]]; then
+    name="${arg#MDD_OUTPUT_DIR=/mdd-work/}"
   fi
   previous="$arg"
 done
-if [[ -z "$output" ]]; then
+if [[ -z "$parent" || -z "$name" ]]; then
   echo "missing output mount" >&2
   exit 1
 fi
+output="${parent}/${name}"
 printf 'built\n' > "${output}/index.html"
 printf '{}\n' > "${output}/.mdd-output.json"
 EOF

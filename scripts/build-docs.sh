@@ -44,16 +44,26 @@ if [[ "${GITHUB_SHA:-}" =~ ^[a-f0-9]{40}$ ]]; then
   source_sha="$GITHUB_SHA"
 fi
 
+# MDD renames the output directory and writes a sibling lock. Mount the parent
+# so both stay on a writable volume. Mounting the output directory itself fails.
+parent="$(dirname "$output")"
+name="$(basename "$output")"
+if [[ "$parent" == "/" || "$name" == .* || "$name" == *[!A-Za-z0-9._-]* ]]; then
+  log_error "MDD output directory must sit in a writable folder."
+  exit 1
+fi
+
 log_info "Building docs with ${image} at ${base_path}."
 docker run --rm \
   --user "$(id -u):$(id -g)" \
   --entrypoint node \
+  -e HOME=/tmp \
   -v "${workspace}:/workspace:ro" \
-  -v "${output}:/tmp/mdd-dist" \
+  -v "${parent}:/mdd-work" \
   -v "${script_dir}/mdd-build.mjs:/opt/mdd-build.mjs:ro" \
   -e MDD_PROJECT_DIR=/workspace \
   -e MDD_DOCS_DIR="${source_dir}" \
-  -e MDD_OUTPUT_DIR=/tmp/mdd-dist \
+  -e "MDD_OUTPUT_DIR=/mdd-work/${name}" \
   -e MDD_BASE_PATH="${base_path}" \
   -e MDD_SOURCE_SHA="${source_sha}" \
   "$image" \
