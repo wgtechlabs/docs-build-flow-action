@@ -1,0 +1,93 @@
+name: Docs Build Flow Action
+description: Build MDD documentation and merge it into a GitHub Pages site
+author: WG Technology Labs
+
+branding:
+  icon: book-open
+  color: purple
+
+inputs:
+  github-token:
+    description: Token used to read Pages settings and the current run artifact
+    required: false
+    default: ${{ github.token }}
+  base-path:
+    description: Public docs prefix. Empty uses /<repo>/<docs-path>/, or /<docs-path>/ on a custom domain or a *.github.io site. Standalone mode uses the site root.
+    required: false
+    default: ""
+  docs-path:
+    description: Directory inside an existing Pages site that receives the docs
+    required: false
+    default: docs
+  source-dir:
+    description: MDD folder in the repository
+    required: false
+    default: mdd
+  mdd-version:
+    description: Pinned wgtechlabs/mdd image tag
+    required: false
+    default: "0.3.0"
+
+outputs:
+  mode:
+    description: standalone when the repository has no Pages site, otherwise workflow
+    value: ${{ steps.resolve.outputs.mode }}
+  base-path:
+    description: Public base path passed to MDD
+    value: ${{ steps.resolve.outputs.base-path }}
+  docs-path:
+    description: Directory inside the site that received the docs. Empty in standalone mode.
+    value: ${{ steps.resolve.outputs.docs-path }}
+  artifact-name:
+    description: Pages artifact name
+    value: github-pages
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve Pages mode
+      id: resolve
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_BASE_PATH: ${{ inputs.base-path }}
+        INPUT_DOCS_PATH: ${{ inputs.docs-path }}
+        INPUT_SOURCE_DIR: ${{ inputs.source-dir }}
+        INPUT_MDD_VERSION: ${{ inputs.mdd-version }}
+      run: bash "${GITHUB_ACTION_PATH}/scripts/resolve-pages.sh"
+
+    - name: Prepare site directory
+      id: prepare
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        PAGES_MODE: ${{ steps.resolve.outputs.mode }}
+        DOCS_PATH: ${{ steps.resolve.outputs.docs-path }}
+      run: bash "${GITHUB_ACTION_PATH}/scripts/prepare-site.sh"
+
+    - name: Build documentation
+      shell: bash
+      env:
+        PAGES_MODE: ${{ steps.resolve.outputs.mode }}
+        BASE_PATH: ${{ steps.resolve.outputs.base-path }}
+        DOCS_PATH: ${{ steps.resolve.outputs.docs-path }}
+        SOURCE_DIR: ${{ inputs.source-dir }}
+        MDD_VERSION: ${{ inputs.mdd-version }}
+        SITE_DIR: ${{ steps.prepare.outputs.site-dir }}
+      run: bash "${GITHUB_ACTION_PATH}/scripts/build-docs.sh"
+
+    - name: Package Pages artifact
+      id: package
+      shell: bash
+      env:
+        SITE_DIR: ${{ steps.prepare.outputs.site-dir }}
+      run: bash "${GITHUB_ACTION_PATH}/scripts/package-site.sh"
+
+    - name: Upload Pages artifact
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: github-pages
+        path: ${{ steps.package.outputs.archive }}
+        retention-days: 1
+        if-no-files-found: error
+        overwrite: true

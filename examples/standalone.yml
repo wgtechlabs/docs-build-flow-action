@@ -1,0 +1,34 @@
+name: Publish docs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: read
+  actions: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+
+      - name: Build docs
+        uses: wgtechlabs/docs-build-flow-action@v1
+        with:
+          source-dir: mdd
+
+      - name: Deploy Pages
+        id: deploy
+        uses: actions/deploy-pages@v5.0.1
