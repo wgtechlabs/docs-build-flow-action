@@ -30,7 +30,7 @@ jobs:
           path: ./site
 
       - name: Build docs into the site
-        uses: wgtechlabs/docs-build-flow-action@v1
+        uses: wgtechlabs/docs-build-flow-action@v0
         with:
           source-dir: mdd
           docs-path: docs

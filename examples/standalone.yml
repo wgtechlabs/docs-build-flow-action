@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Build docs
-        uses: wgtechlabs/docs-build-flow-action@v1
+        uses: wgtechlabs/docs-build-flow-action@v0
         with:
           source-dir: mdd
 
