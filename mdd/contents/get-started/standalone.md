@@ -11,9 +11,12 @@ The built files are copied to the site root. `docs-path` is still validated, and
 
 ## When this mode runs
 
-`scripts/resolve-pages.sh` selects standalone mode when `GET /repos/{owner}/{repo}/pages` returns HTTP 404.
+`scripts/resolve-pages.sh` selects standalone mode in two cases:
 
-The Pages response body is not read on HTTP 404. Standalone mode has no `cname` and no `build_type`.
+- `GET /repos/{owner}/{repo}/pages` returns HTTP 404.
+- The Pages source is GitHub Actions, and no earlier step in this run uploaded a `github-pages` artifact. The log shows `No github-pages artifact in this run. The docs will be the whole site.`
+
+`actions/deploy-pages` needs the Pages source set to GitHub Actions, so a deployed standalone site uses the second case. The job needs `actions: read` for the artifact check. The custom domain from `cname` still applies to the base path.
 
 > [!IMPORTANT]
 > The Pages response selects the mode. A later run that returns HTTP 200 with `build_type` `workflow` uses workflow mode.

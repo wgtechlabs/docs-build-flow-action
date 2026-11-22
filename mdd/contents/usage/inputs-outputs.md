@@ -141,7 +141,7 @@ These outputs are set when the action succeeds.
 | `docs-path` | The directory that received the docs. An empty string in standalone mode. |
 | `artifact-name` | `github-pages`. |
 
-`mode` is `standalone` when the Pages request returns HTTP 404. It is `workflow` when the request returns HTTP 200 and `build_type` is `workflow`. A legacy or unsupported site stops before outputs are written.
+`mode` is `standalone` when the Pages request returns HTTP 404. It is also `standalone` when the request returns HTTP 200, `build_type` is `workflow`, and this run has no `github-pages` artifact. It is `workflow` when that artifact exists. A legacy or unsupported site stops before outputs are written.
 
 ## Read an output
 

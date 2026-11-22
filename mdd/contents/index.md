@@ -12,12 +12,13 @@ The current release is [v0.1.0](https://github.com/wgtechlabs/docs-build-flow-ac
 
 ## Modes
 
-The action calls `GET /repos/{owner}/{repo}/pages`. That response selects the mode. No input overrides it.
+The action calls `GET /repos/{owner}/{repo}/pages`. That response, and whether this run has a `github-pages` artifact, select the mode. No input overrides it.
 
 | Pages API result | Mode | What the action does |
 | --- | --- | --- |
 | HTTP 404 | `standalone` | The built docs become the whole site. |
-| HTTP 200 and `build_type` is `workflow` | `workflow` | The action merges the docs into the `github-pages` artifact from the same run. |
+| HTTP 200, `build_type` is `workflow`, and no `github-pages` artifact in this run | `standalone` | The built docs become the whole site. |
+| HTTP 200, `build_type` is `workflow`, and a `github-pages` artifact in this run | `workflow` | The action merges the docs into the `github-pages` artifact from the same run. |
 | HTTP 200 and `build_type` is `legacy` | The action stops | The log tells you to set the Pages source to GitHub Actions. |
 | Another HTTP status, or another `build_type` | The action stops | The log includes the status or the build type. |
 

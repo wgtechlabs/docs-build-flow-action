@@ -159,6 +159,39 @@ compute_base_path() {
   printf '%s\n' "$path"
 }
 
+# Prints true when this workflow run has a Pages artifact, otherwise false.
+# PAGES_ARTIFACT_PRESENT overrides the API check.
+run_has_pages_artifact() {
+  local api body code count
+
+  if [[ -n "${PAGES_ARTIFACT_PRESENT:-}" ]]; then
+    [[ "$PAGES_ARTIFACT_PRESENT" == "true" ]] && echo true || echo false
+    return 0
+  fi
+  if [[ -z "${GITHUB_TOKEN:-}" || -z "${GITHUB_RUN_ID:-}" ]]; then
+    log_error "github-token and GITHUB_RUN_ID are required to check for a Pages artifact."
+    return 1
+  fi
+  require_cmd curl
+  api="${GITHUB_API_URL:-https://api.github.com}"
+  body="$(mktemp)"
+  code="$(
+    curl -sS -o "$body" -w '%{http_code}' \
+      -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "${api}/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?name=${PAGES_ARTIFACT_NAME}"
+  )"
+  if [[ "$code" != "200" ]] || ! jq empty "$body" >/dev/null 2>&1; then
+    rm -f "$body"
+    log_error "Cannot list workflow artifacts (HTTP ${code}). Grant this job actions: read."
+    return 1
+  fi
+  count="$(jq '[.artifacts[]? | select(.expired == false)] | length' "$body")"
+  rm -f "$body"
+  [[ "$count" -gt 0 ]] && echo true || echo false
+}
+
 # Sets PAGES_MODE and PAGES_CNAME. Returns 1 for legacy and request failures.
 pages_from_response() {
   local code="$1"

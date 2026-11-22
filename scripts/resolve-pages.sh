@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Read the Pages site and choose standalone or workflow mode.
+# Workflow mode needs a Pages artifact from an earlier step in this run.
 
 set -euo pipefail
 
@@ -42,6 +43,13 @@ else
 fi
 
 pages_from_response "$http_code" "$body_file" "$repository"
+if [[ "$PAGES_MODE" == "workflow" ]]; then
+  has_artifact="$(run_has_pages_artifact)"
+  if [[ "$has_artifact" != "true" ]]; then
+    log_info "No ${PAGES_ARTIFACT_NAME} artifact in this run. The docs will be the whole site."
+    PAGES_MODE="standalone"
+  fi
+fi
 base_path="$(compute_base_path "$PAGES_MODE" "$base_override" "$docs_path" "$owner" "$repo_name" "$PAGES_CNAME")"
 placement="$docs_path"
 if [[ "$PAGES_MODE" == "standalone" ]]; then

@@ -85,6 +85,7 @@ run_resolve() {
   local docs_path="${5:-docs}"
   local source_dir="${6:-mdd}"
   local version="${7:-0.3.0}"
+  local artifact="${8:-true}"
   local body output
   body="$(mktemp)"
   output="$(mktemp)"
@@ -98,6 +99,7 @@ run_resolve() {
     INPUT_DOCS_PATH="$docs_path" \
     INPUT_SOURCE_DIR="$source_dir" \
     INPUT_MDD_VERSION="$version" \
+    PAGES_ARTIFACT_PRESENT="$artifact" \
     bash "${ROOT}/scripts/resolve-pages.sh" >"${output}.log" 2>&1
   local code=$?
   set -e
@@ -130,6 +132,11 @@ run_resolve 200 '{"build_type":"workflow","cname":null}' "wgtechlabs/docs-build-
 expect_eq "workflow mode is selected" "$(output_value "$result" mode)" "workflow"
 expect_eq "project docs base path includes docs-path" "$(output_value "$result" base-path)" "/docs-build-flow-action/docs/"
 expect_eq "workflow keeps docs-path" "$(output_value "$result" docs-path)" "docs"
+
+run_resolve 200 '{"build_type":"workflow","cname":null}' "wgtechlabs/docs-build-flow-action" "" docs mdd 0.3.0 false > "$result"
+expect_eq "Pages site without an artifact is standalone" "$(output_value "$result" mode)" "standalone"
+expect_eq "standalone with Pages uses /<repo>/" "$(output_value "$result" base-path)" "/docs-build-flow-action/"
+expect_eq "standalone with Pages does not nest docs" "$(output_value "$result" docs-path)" ""
 
 run_resolve 200 '{"build_type":"workflow","cname":"docs.example.com"}' "wgtechlabs/docs-build-flow-action" > "$result"
 expect_eq "custom domain base path omits the repo" "$(output_value "$result" base-path)" "/docs/"

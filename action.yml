@@ -30,7 +30,7 @@ inputs:
 
 outputs:
   mode:
-    description: standalone when the repository has no Pages site, otherwise workflow
+    description: standalone when there is no Pages site or no github-pages artifact in this run, otherwise workflow
     value: ${{ steps.resolve.outputs.mode }}
   base-path:
     description: Public base path passed to MDD

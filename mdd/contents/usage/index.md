@@ -34,7 +34,7 @@ The host is `GITHUB_API_URL` when that variable is set. Otherwise the host is `h
 | HTTP status | Result |
 | --- | --- |
 | 404 | Mode `standalone`. The body is not parsed. |
-| 200 | The body must be JSON. `build_type` must be `workflow` or `legacy`. |
+| 200 | The body must be JSON. `build_type` must be `workflow` or `legacy`. With `workflow`, the mode is `standalone` when this run has no `github-pages` artifact. |
 | 401 | Stop. `Cannot read GitHub Pages (HTTP 401). Grant this job pages: read.` |
 | 403 | Stop. `Cannot read GitHub Pages (HTTP 403). Grant this job pages: read.` |
 | Any other status | Stop. `GitHub Pages request failed with HTTP 500.` The number is the status GitHub returned. |

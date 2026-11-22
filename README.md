@@ -62,7 +62,7 @@ The checkout step needs `contents: read`.
 
 ### Publish the docs as the whole site
 
-Use this path when the repository has no Pages site.
+Use this path when the docs are the whole site. No earlier step in the job uploads a Pages artifact.
 This workflow follows [`examples/standalone.yml`](examples/standalone.yml) and pins `@v0`.
 
 ```yaml
@@ -168,7 +168,9 @@ The rest of the site stays at `/`.
 flowchart TD
   A[Read Pages] --> B{Site?}
   B -->|No site| C[Standalone: docs are the site]
-  B -->|GitHub Actions| D[Download the github-pages artifact]
+  B -->|GitHub Actions| I{github-pages artifact in this run?}
+  I -->|No| C
+  I -->|Yes| D[Download the github-pages artifact]
   B -->|Legacy| E[Fail and ask for GitHub Actions]
   C --> F[Build MDD]
   D --> G[Build MDD into docs-path]
@@ -179,7 +181,8 @@ flowchart TD
 The action calls `GET /repos/{owner}/{repo}/pages`.
 
 - **No Pages site.** Standalone mode. The docs are the whole site. `docs-path` is empty.
-- **GitHub Actions source.** Workflow mode. The action downloads the `github-pages` artifact from this run, builds the docs into `<docs-path>/`, and uploads that artifact again. The upload sets `overwrite: true`, so the new archive replaces the previous one. It keeps the archive for 1 day.
+- **GitHub Actions source, no `github-pages` artifact in this run.** Standalone mode, as above.
+- **GitHub Actions source with a `github-pages` artifact.** Workflow mode. The action downloads the `github-pages` artifact from this run, builds the docs into `<docs-path>/`, and uploads that artifact again. The upload sets `overwrite: true`, so the new archive replaces the previous one. It keeps the archive for 1 day.
 - **Legacy source.** The action fails. Set the Pages source to GitHub Actions. Then run this action after `actions/upload-pages-artifact` and before `actions/deploy-pages`.
 
 MDD has no static-export command.
@@ -227,7 +230,7 @@ They cannot contain a hidden segment.
 
 | Output | Description |
 | --- | --- |
-| `mode` | `standalone` when the repository has no Pages site, otherwise `workflow` |
+| `mode` | `standalone` when there is no Pages site or no `github-pages` artifact in this run, otherwise `workflow` |
 | `base-path` | Public base path passed to MDD |
 | `docs-path` | Directory inside the site that received the docs. Empty in standalone mode. |
 | `artifact-name` | Pages artifact name. The value is `github-pages`. |
