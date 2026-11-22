@@ -1,0 +1,54 @@
+name: Docs
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+      actions: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+
+      - name: Build docs with this action
+        id: docs
+        uses: ./
+        with:
+          source-dir: mdd
+
+      - name: Show build result
+        run: |
+          echo "Mode: ${{ steps.docs.outputs.mode }}"
+          echo "Base path: ${{ steps.docs.outputs.base-path }}"
+
+  deploy:
+    name: Deploy Docs
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy Pages
+        id: deploy
+        uses: actions/deploy-pages@v5.0.1
