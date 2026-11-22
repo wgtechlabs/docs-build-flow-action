@@ -12,7 +12,7 @@ inputs:
     required: false
     default: ${{ github.token }}
   base-path:
-    description: Public docs prefix. Empty uses /<repo>/<docs-path>/, or /<docs-path>/ on a custom domain or a *.github.io site. Standalone mode uses the site root.
+    description: Public docs prefix. Empty uses /<repo>/<docs-path>/, or /<docs-path>/ on a custom domain or an <owner>.github.io repository. Standalone mode uses the site root.
     required: false
     default: ""
   docs-path:

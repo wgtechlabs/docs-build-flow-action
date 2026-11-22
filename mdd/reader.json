@@ -1,0 +1,12 @@
+{
+  "header": {
+    "links": [
+      { "label": "Sponsor", "href": "https://github.com/sponsors/wgtechlabs" },
+      { "label": "Contribute", "href": "https://github.com/wgtechlabs/docs-build-flow-action" }
+    ],
+    "cta": {
+      "label": "Latest release",
+      "href": "https://github.com/wgtechlabs/docs-build-flow-action/releases/latest"
+    }
+  }
+}

@@ -205,7 +205,7 @@ The default image tag is `0.3.0`.
 | Input | Description | Required | Default |
 | --- | --- | --- | --- |
 | `github-token` | Token used to read Pages settings and the current run artifact | No | `${{ github.token }}` |
-| `base-path` | Public docs prefix. Empty uses `/<repo>/<docs-path>/`, or `/<docs-path>/` on a custom domain or a `*.github.io` site. Standalone mode uses the site root. | No | `""` |
+| `base-path` | Public docs prefix. Empty uses `/<repo>/<docs-path>/`, or `/<docs-path>/` on a custom domain or an `<owner>.github.io` repository. Standalone mode uses the site root. | No | `""` |
 | `docs-path` | Directory inside an existing Pages site that receives the docs | No | `docs` |
 | `source-dir` | MDD folder in the repository | No | `mdd` |
 | `mdd-version` | Pinned `wgtechlabs/mdd` image tag | No | `0.3.0` |
